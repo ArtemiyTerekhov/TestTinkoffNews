@@ -108,16 +108,18 @@ public class NewsPresenter implements NewsContract.Presenter {
 
     private void onError(Throwable throwable) {
         if (isViewBound()) {
+            // Don't check exception type in test app
+            mView.showError(throwable.getMessage());
 //            if (throwable instanceof NoConnectivityException
 //                    || throwable instanceof ConnectException) {
-//                mView.showError(ERROR_NO_INTERNET_CONNECTION);
-//            } else if (throwable instanceof ClientException
-//                    && ExceptionUtils.isTooManyRequests((ClientException) throwable)) {
-//                showTooManyRequestsDialog();
+//              todo
+//            } else if (throwable instanceof ClientException) {
+//                todo
 //            } else {
-//                mView.showError(ERROR_RESPONSE);
+//                todo
 //            }
         }
+        hideLoadingProgress();
     }
 
     private void onUpdate(List<News> items, boolean isRefresh) {

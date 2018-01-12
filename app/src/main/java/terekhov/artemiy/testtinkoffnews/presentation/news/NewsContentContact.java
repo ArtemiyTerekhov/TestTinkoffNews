@@ -16,6 +16,8 @@ public interface NewsContentContact {
         void loadingFinished();
 
         void update(NewsContent content);
+
+        void showError(String message);
     }
 
     interface Presenter extends BasePresenter<View> {

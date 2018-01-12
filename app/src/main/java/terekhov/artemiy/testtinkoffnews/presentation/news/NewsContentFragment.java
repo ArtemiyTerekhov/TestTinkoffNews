@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -119,5 +120,10 @@ public class NewsContentFragment extends BaseFragment<NewsContentContact.View, N
         mDateTextView.setText(DateFormat.format("dd.MM.yyyy HH:mm:ss", content.getDate()));
         mContentTextView.setText(Html.fromHtml(content.getContent()));
         mContentTextView.setMovementMethod(LinkMovementMethod.getInstance());
+    }
+
+    @Override
+    public void showError(String message) {
+        Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
     }
 }

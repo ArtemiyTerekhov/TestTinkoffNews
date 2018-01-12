@@ -27,7 +27,6 @@ public class NewsLocalDataStore implements NewsDataStore {
     public Observable<List<NewsEntity>> getNews() {
         return mRxSnappyClient.findKeys(KEY_NEWS_ENTITY)
                 .flatMap(Observable::fromArray)
-                .flatMap(this::getKey)
                 .flatMap(id -> getNewsById(id).onErrorResumeNext(Observable.empty()))
                 .toSortedList(this::sortPosts).toObservable();
     }
@@ -58,12 +57,8 @@ public class NewsLocalDataStore implements NewsDataStore {
         return dateDiff == 0 ? 0 : dateDiff > 0 ? 1 : -1;
     }
 
-    private Observable<String> getKey(@NonNull String key) {
-        return mRxSnappyClient.getString(key, null);
-    }
-
     private Observable<NewsEntity> getNewsById(String id) {
-        return mRxSnappyClient.getString(KEY_NEWS_ENTITY + id, null)
+        return mRxSnappyClient.getString(id, null)
                 .map(json -> BaseEntity.fromJson(json, NewsEntity.class));
     }
 

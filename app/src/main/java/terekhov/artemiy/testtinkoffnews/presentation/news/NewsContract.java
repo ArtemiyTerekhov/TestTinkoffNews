@@ -20,6 +20,8 @@ public interface NewsContract {
         void updateList(List<News> items, boolean isRefresh);
 
         int getItemsCount();
+
+        void showError(String message);
     }
 
     interface Presenter extends BasePresenter<View> {
