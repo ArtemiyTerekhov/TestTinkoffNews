@@ -1,0 +1,57 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    
+    repositories {
+        google()
+        jcenter()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.0.1'
+        classpath 'com.jakewharton:butterknife-gradle-plugin:8.5.1'
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        jcenter()
+        mavenCentral()
+        maven { url "https://jitpack.io" }
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+
+ext {
+    // Sdk and tools
+    minSdkVersion = 21
+    targetSdkVersion = 26
+    compileSdkVersion = 26
+    buildToolsVersion = '26.0.2'
+
+    // App dependencies
+    annotationVersion = '26.1.0'
+    supportLibraryVersion = '26.1.0'
+    constraintVersion = '1.0.2'
+    butterknifeVersion = '8.5.1'
+    retrofitVersion = '2.2.0'
+    okhttpVersion = '3.9.0'
+    okioVersion = '1.13.0'
+    gsonVersion = '2.8.0'
+    gsonConverterVersion = '2.1.0'
+    rxjavaVersion = '2.1.6'
+    rxandroidVersion = '2.0.1'
+    adapterRxjavaVersion = '2.2.0'
+    daggerVersion = '2.10'
+    jsr250Version = '1.0'
+    timberVersion = '4.6.0'
+    networkVersion = '0.12.2'
+    storioVersion = '3.0.0'
+    junitVersion = '4.12'
+    runnerVersion = '1.0.1'
+    espressoVersion = '3.0.1'
+}
