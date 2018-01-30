@@ -1,11 +1,16 @@
 package terekhov.artemiy.testtinkoffnews.domain.news;
 
+import android.support.annotation.Nullable;
 import android.support.v4.util.Pair;
 
+import java.util.Collections;
 import java.util.List;
 
+import io.objectbox.reactive.DataObserver;
+import io.reactivex.Completable;
 import io.reactivex.Observable;
 import terekhov.artemiy.testtinkoffnews.App;
+import terekhov.artemiy.testtinkoffnews.data.entities.NewsEntity;
 import terekhov.artemiy.testtinkoffnews.data.entities.mapper.NewsEntityDataMapper;
 import terekhov.artemiy.testtinkoffnews.data.repository.DataStore;
 import terekhov.artemiy.testtinkoffnews.data.repository.news.NewsRepository;
@@ -31,10 +36,28 @@ public class GetNewsUseCase extends UseCase<Pair<List<News>, Boolean>, GetNewsUs
 
     @Override
     public Observable<Pair<List<News>, Boolean>> buildUseCaseObservable(GetNewsUseCase.Request params) {
-        return mAppRepository.getNews(params.getRequestType())
-                .flatMap(entities -> mAppRepository.saveNews(entities, params.getRequestType()))
+        return mAppRepository.getNews()
                 .map(NewsEntityDataMapper::transform)
+                .map(News::sort).toObservable()
                 .map(news -> Pair.create(news, params.isClean()));
+    }
+
+    @Override
+    public void execute(@Nullable final Request request) {
+        mAppRepository.registerNewsObserver(data -> {
+            if (!data.isEmpty()) {
+                doOnNext(Pair.create(NewsEntityDataMapper.transform(NewsEntity.sort(data)),true));
+            }
+        });
+        super.execute(request);
+    }
+
+    @Override
+    public void clear() {
+        super.clear();
+        if (mAppRepository != null) {
+            mAppRepository.unregisterNewsObserver();
+        }
     }
 
     public static final class Request {
@@ -80,5 +103,9 @@ public class GetNewsUseCase extends UseCase<Pair<List<News>, Boolean>, GetNewsUs
                 return new Request(this);
             }
         }
+    }
+
+    public void testChangeItem() {
+        mAppRepository.testChangeItem();
     }
 }

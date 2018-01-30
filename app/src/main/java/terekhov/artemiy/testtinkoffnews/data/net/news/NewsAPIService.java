@@ -4,7 +4,10 @@ import android.support.annotation.NonNull;
 
 import java.util.List;
 
+import io.reactivex.BackpressureStrategy;
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import terekhov.artemiy.testtinkoffnews.data.entities.NewsContentEntity;
 import terekhov.artemiy.testtinkoffnews.data.entities.NewsEntity;
 import terekhov.artemiy.testtinkoffnews.data.net.api.AppService;
@@ -22,11 +25,13 @@ public class NewsAPIService extends AppService {
         mNewsAPI = getRetrofit(APP_HTTP_BASE_URL_V1).create(INewsAPI.class);
     }
 
-    public Observable<List<NewsEntity>> getNews() {
-        return mNewsAPI.getNews().flatMap(this::parseResponse);
+    public Flowable<List<NewsEntity>> getNews() {
+        return mNewsAPI.getNews().flatMap(this::parseResponse)
+                .toFlowable(BackpressureStrategy.DROP);
     }
 
-    public Observable<NewsContentEntity> getNewsContent(@NonNull String id) {
-        return mNewsAPI.getNewsContent(id).flatMap(this::parseResponse);
+    public Single<NewsContentEntity> getNewsContent(@NonNull String id) {
+        return mNewsAPI.getNewsContent(id).flatMap(this::parseResponse)
+                .firstOrError();
     }
 }

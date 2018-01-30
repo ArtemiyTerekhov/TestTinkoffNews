@@ -12,6 +12,7 @@ import io.reactivex.exceptions.CompositeException;
 import io.reactivex.exceptions.Exceptions;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
+import io.reactivex.observers.DisposableObserver;
 import io.reactivex.plugins.RxJavaPlugins;
 
 /**
@@ -56,32 +57,12 @@ public abstract class UseCase<T, Params> {
                 .subscribe(this::doOnNext, this::doOnError, this::doOnComplete);
     }
 
-    private void doOnNext(T value) {
-        if (!mEmitter.isDisposed()) {
-            mEmitter.onNext(value);
-        }
-    }
-
-    private void doOnError(Throwable throwable) {
-        if (mOnError != null) {
-            try {
-                mOnError.accept(throwable);
-            } catch (Throwable e) {
-                Exceptions.throwIfFatal(e);
-                RxJavaPlugins.onError(new CompositeException(throwable, e));
-            }
-        }
-    }
-
-    private void doOnComplete() {
-        if (mOnComplete != null) {
-            try {
-                mOnComplete.run();
-            } catch (Throwable e) {
-                Exceptions.throwIfFatal(e);
-                RxJavaPlugins.onError(e);
-            }
-        }
+    public Observable<T> requestObservable(@Nullable Params params) {
+        return buildUseCaseObservable(params)
+                .subscribeOn(mSubscribeScheduler)
+                .observeOn(nObserveScheduler)
+                .doOnSubscribe(this::addDisposable)
+                .doAfterTerminate(this::clear);
     }
 
     public Observable<T> getObservable() {
@@ -109,11 +90,39 @@ public abstract class UseCase<T, Params> {
     /**
      * Dispose from current {@link CompositeDisposable}.
      */
-    private void addDisposable(@NonNull Disposable disposable) {
+    protected void addDisposable(@NonNull Disposable disposable) {
         mDisposables.add(disposable);
     }
 
-    private void onSourceEmitter(ObservableEmitter<T> emitter) {
+    protected void onSourceEmitter(ObservableEmitter<T> emitter) {
         mEmitter = emitter;
+    }
+
+    protected void doOnNext(T value) {
+        if (!mEmitter.isDisposed()) {
+            mEmitter.onNext(value);
+        }
+    }
+
+    protected void doOnError(Throwable throwable) {
+        if (mOnError != null) {
+            try {
+                mOnError.accept(throwable);
+            } catch (Throwable e) {
+                Exceptions.throwIfFatal(e);
+                RxJavaPlugins.onError(new CompositeException(throwable, e));
+            }
+        }
+    }
+
+    protected void doOnComplete() {
+        if (mOnComplete != null) {
+            try {
+                mOnComplete.run();
+            } catch (Throwable e) {
+                Exceptions.throwIfFatal(e);
+                RxJavaPlugins.onError(e);
+            }
+        }
     }
 }

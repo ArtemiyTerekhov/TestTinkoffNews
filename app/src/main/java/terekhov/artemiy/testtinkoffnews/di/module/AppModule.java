@@ -6,8 +6,10 @@ import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
+import io.objectbox.BoxStore;
 import terekhov.artemiy.testtinkoffnews.data.db.RxSnappy;
 import terekhov.artemiy.testtinkoffnews.data.db.RxSnappyClient;
+import terekhov.artemiy.testtinkoffnews.data.entities.MyObjectBox;
 import terekhov.artemiy.testtinkoffnews.data.net.news.NewsAPIService;
 import terekhov.artemiy.testtinkoffnews.data.repository.news.NewsRepository;
 
@@ -47,5 +49,11 @@ public class AppModule {
     RxSnappyClient provideRxSnappyClient(Application context) {
         RxSnappy.init(context);
         return new RxSnappyClient();
+    }
+
+    @Provides
+    @Singleton
+    BoxStore provideBoxStore(Application context) {
+        return MyObjectBox.builder().androidContext(context).build();
     }
 }

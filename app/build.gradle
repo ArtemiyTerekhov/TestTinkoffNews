@@ -1,5 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'com.jakewharton.butterknife'
+apply plugin: 'io.objectbox'
+apply plugin: 'com.jakewharton.hugo'
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -88,6 +90,8 @@ dependencies {
 
     //NoSQL Database
     implementation 'com.snappydb:snappydb-lib:0.5.2'
+    implementation "io.objectbox:objectbox-android:$rootProject.ext.objectboxVersion"
+    annotationProcessor "io.objectbox:objectbox-processor:$rootProject.ext.objectboxVersion"
 
     //Tests
     testImplementation "junit:junit:$rootProject.ext.junitVersion"

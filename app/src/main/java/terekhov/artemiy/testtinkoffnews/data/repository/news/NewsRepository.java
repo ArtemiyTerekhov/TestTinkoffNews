@@ -6,13 +6,19 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import hugo.weaving.DebugLog;
+import io.objectbox.reactive.DataObserver;
+import io.reactivex.Completable;
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import terekhov.artemiy.testtinkoffnews.data.entities.NewsContentEntity;
 import terekhov.artemiy.testtinkoffnews.data.entities.NewsEntity;
 import terekhov.artemiy.testtinkoffnews.data.repository.DataStore;
 import terekhov.artemiy.testtinkoffnews.di.component.DaggerDataStoreComponent;
 import terekhov.artemiy.testtinkoffnews.di.component.DataStoreComponent;
 import terekhov.artemiy.testtinkoffnews.di.module.DataStoreModule;
+import terekhov.artemiy.testtinkoffnews.domain.interactor.SchedulerProvider;
 
 /**
  * Created by Artemiy Terekhov on 11.01.2018.
@@ -32,38 +38,46 @@ public class NewsRepository {
         component.inject(this);
     }
 
-    public Observable<List<NewsEntity>> getNews(@DataStore.RequestType int type) {
-        switch (type) {
-            case DataStore.TYPE_REQUEST_LOCAL:
-                return mLocalDataStore.getNews();
-            case DataStore.TYPE_REQUEST_REMOTE:
-            default:
-                return mRemoteDataStore.getNews();
-        }
+    public void registerNewsObserver(DataObserver<List<NewsEntity>> dataObserver) {
+        mLocalDataStore.registerNewsObserver(dataObserver);
     }
 
-    public Observable<List<NewsEntity>> saveNews(
-            @NonNull List<NewsEntity> news, @DataStore.RequestType int type) {
-        return type == DataStore.TYPE_REQUEST_REMOTE
-                ? mLocalDataStore.saveNews(news)
-                : Observable.just(news);
+    public void unregisterNewsObserver() {
+        mLocalDataStore.unregisterNewsObserver();
     }
 
-    public Observable<NewsContentEntity> getNewsContent(
-            @NonNull String id, @DataStore.RequestType int type) {
-        switch (type) {
-            case DataStore.TYPE_REQUEST_LOCAL:
-                return mLocalDataStore.getNewsContent(id);
-            case DataStore.TYPE_REQUEST_REMOTE:
-            default:
-                return mRemoteDataStore.getNewsContent(id);
-        }
+    @DebugLog
+    public Flowable<List<NewsEntity>> getNews() {
+        return mLocalDataStore.getNews();
     }
 
-    public Observable<NewsContentEntity> saveNewsContent(@NonNull String id,
-            @NonNull NewsContentEntity newsContentEntity, @DataStore.RequestType int type) {
-        return type == DataStore.TYPE_REQUEST_REMOTE
-                ? mLocalDataStore.saveNewsContent(id, newsContentEntity)
-                : Observable.just(newsContentEntity);
+    @DebugLog
+    public Completable saveNews(@NonNull List<NewsEntity> news) {
+        return mLocalDataStore.saveNews(news);
+    }
+
+    public Single<NewsContentEntity> getNewsContent(@NonNull String id) {
+        return mLocalDataStore.getNewsContent(id);
+    }
+
+    public Completable saveNewsContent(@NonNull String id, @NonNull NewsContentEntity newsContentEntity) {
+        return mLocalDataStore.saveNewsContent(id, newsContentEntity);
+    }
+
+    public Completable syncNews() {
+        return Completable.merge(
+                mRemoteDataStore.getNews().map(this::saveNews)
+        );
+    }
+
+    public Completable syncNewsContent(@NonNull String id) {
+        return Completable.merge(
+                mRemoteDataStore.getNewsContent(id).toFlowable()
+                        .map(entity -> saveNewsContent(id, entity))
+        );
+    }
+
+    public void testChangeItem() {
+        mLocalDataStore.testChangeItem();
     }
 }

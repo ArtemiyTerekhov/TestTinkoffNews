@@ -5,6 +5,7 @@ import android.app.Application;
 import javax.inject.Singleton;
 
 import dagger.Component;
+import io.objectbox.BoxStore;
 import terekhov.artemiy.testtinkoffnews.data.db.RxSnappyClient;
 import terekhov.artemiy.testtinkoffnews.data.net.news.NewsAPIService;
 import terekhov.artemiy.testtinkoffnews.data.repository.news.NewsRepository;
@@ -25,4 +26,5 @@ public interface AppComponent {
     NewsAPIService newsAPIService();
     SchedulerProvider schedulerProvider();
     RxSnappyClient rxSnappyClient();
+    BoxStore boxStore();
 }

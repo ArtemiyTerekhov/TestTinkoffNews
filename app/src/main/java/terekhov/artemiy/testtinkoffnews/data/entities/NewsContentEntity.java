@@ -3,81 +3,95 @@ package terekhov.artemiy.testtinkoffnews.data.entities;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import io.objectbox.annotation.Entity;
+import io.objectbox.annotation.Transient;
+import io.objectbox.relation.ToOne;
+
 /**
  * Created by Artemiy Terekhov on 11.01.2018.
  * Copyright (c) 2018 Artemiy Terekhov. All rights reserved.
  */
 
+@Entity
 public class NewsContentEntity extends BaseEntity {
     @SerializedName("title")
     @Expose
-    private TitleEntity mTitle;
+    @Transient
+    private TitleEntity title;
     @SerializedName("creationDate")
     @Expose
-    private DateEntity mCreationDate;
+    @Transient
+    private DateEntity creationDate;
     @SerializedName("lastModificationDate")
     @Expose
-    private DateEntity mLastModificationDate;
+    @Transient
+    private DateEntity lastModificationDate;
     @SerializedName("content")
     @Expose
-    private String mContent;
+    private String content;
     @SerializedName("bankInfoTypeId")
     @Expose
-    private Long mBankInfoTypeId;
+    private Long bankInfoTypeId;
     @SerializedName("typeId")
     @Expose
-    private String mTypeId;
+    private String typeId;
+
+    private ToOne<NewsEntity> newsRelation;
+
+    private ToOne<TitleEntity> titleRelation;
+    private ToOne<DateEntity> creationDateRelation;
+    private ToOne<DateEntity> lastModificationDateRelation;
 
     public NewsContentEntity() {
         super();
     }
 
     public TitleEntity getTitle() {
-        return mTitle;
+        return title;
     }
 
     public void setTitle(TitleEntity title) {
-        this.mTitle = title;
+        this.title = title;
     }
 
     public DateEntity getCreationDate() {
-        return mCreationDate;
+        return creationDate;
     }
 
     public void setCreationDate(DateEntity creationDate) {
-        this.mCreationDate = creationDate;
+        this.creationDate = creationDate;
     }
 
     public DateEntity getLastModificationDate() {
-        return mLastModificationDate;
+        return lastModificationDate;
     }
 
     public void setLastModificationDate(DateEntity lastModificationDate) {
-        this.mLastModificationDate = lastModificationDate;
+        this.lastModificationDate = lastModificationDate;
     }
 
     public String getContent() {
-        return mContent;
+        return content;
     }
 
     public void setContent(String content) {
-        this.mContent = content;
+        this.content = content;
     }
 
     public Long getBankInfoTypeId() {
-        return mBankInfoTypeId;
+        return bankInfoTypeId;
     }
 
     public void setBankInfoTypeId(Long bankInfoTypeId) {
-        this.mBankInfoTypeId = bankInfoTypeId;
+        this.bankInfoTypeId = bankInfoTypeId;
     }
 
     public String getTypeId() {
-        return mTypeId;
+        return typeId;
     }
 
     public void setTypeId(String typeId) {
-        this.mTypeId = typeId;
+        this.typeId = typeId;
     }
 
     @Override
@@ -90,39 +104,71 @@ public class NewsContentEntity extends BaseEntity {
         NewsContentEntity entity = (NewsContentEntity) obj;
 
         if (entity.getTitle() != null) {
-            if (mTitle == null) {
-                mTitle = entity.getTitle();
+            if (title == null) {
+                title = entity.getTitle();
             } else {
-                mTitle.mergeWith(entity.getTitle());
+                title.mergeWith(entity.getTitle());
             }
         }
 
         if (entity.getCreationDate() != null) {
-            if (mCreationDate == null) {
-                mCreationDate = entity.getCreationDate();
+            if (creationDate == null) {
+                creationDate = entity.getCreationDate();
             } else {
-                mCreationDate.mergeWith(entity.getCreationDate());
+                creationDate.mergeWith(entity.getCreationDate());
             }
         }
 
         if (entity.getLastModificationDate() != null) {
-            if (mLastModificationDate == null) {
-                mLastModificationDate = entity.getLastModificationDate();
+            if (lastModificationDate == null) {
+                lastModificationDate = entity.getLastModificationDate();
             } else {
-                mLastModificationDate.mergeWith(entity.getLastModificationDate());
+                lastModificationDate.mergeWith(entity.getLastModificationDate());
             }
         }
 
         if (entity.getContent() != null) {
-            mContent = entity.getContent();
+            content = entity.getContent();
         }
 
         if (entity.getTypeId() != null) {
-            mTypeId = entity.getTypeId();
+            typeId = entity.getTypeId();
         }
 
         if (entity.getBankInfoTypeId() != null) {
-            mBankInfoTypeId = entity.getBankInfoTypeId();
+            bankInfoTypeId = entity.getBankInfoTypeId();
         }
+    }
+
+    public ToOne<TitleEntity> getTitleRelation() {
+        return titleRelation;
+    }
+
+    public ToOne<DateEntity> getCreationDateRelation() {
+        return creationDateRelation;
+    }
+
+    public ToOne<DateEntity> getLastModificationDateRelation() {
+        return lastModificationDateRelation;
+    }
+
+    public void setTitleRelation() {
+        titleRelation.setTarget(title);
+    }
+
+    public void setCreationDateRelation() {
+        creationDateRelation.setTarget(creationDate);
+    }
+
+    public void setLastModificationDateRelation() {
+        lastModificationDateRelation.setTarget(lastModificationDate);
+    }
+
+    public ToOne<NewsEntity> getNewsRelation() {
+        return newsRelation;
+    }
+
+    public void setNewsRelation(ToOne<NewsEntity> newsRelation) {
+        this.newsRelation = newsRelation;
     }
 }

@@ -16,7 +16,6 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import terekhov.artemiy.testtinkoffnews.App;
 import terekhov.artemiy.testtinkoffnews.R;
 import terekhov.artemiy.testtinkoffnews.domain.model.News;
 import terekhov.artemiy.testtinkoffnews.presentation.MainActivity;
@@ -63,6 +62,7 @@ public class NewsFragment extends BaseFragment<NewsContract.View, NewsContract.P
         initRecyclerView();
         setDefaultActionBar((AppCompatActivity) getActivity());
         mSwipeRefreshLayout.setOnRefreshListener(this::refreshNews);
+//        resumeObservableIfPossible();
     }
 
     @Override
@@ -121,7 +121,12 @@ public class NewsFragment extends BaseFragment<NewsContract.View, NewsContract.P
         }
         mAdapter.updateWithDiff(items,
                 mPresenter.getSchedulerProvider().computation(),
-                mPresenter.getSchedulerProvider().ui());
+                mPresenter.getSchedulerProvider().ui(),
+                () -> {
+                    if (isRefresh) {
+                        mRecyclerView.smoothScrollToPosition(0);
+                    }
+                });
     }
 
     @Override
@@ -136,8 +141,9 @@ public class NewsFragment extends BaseFragment<NewsContract.View, NewsContract.P
 
     @Override
     public void onItemClick(News item) {
-        ((App) App.getAppComponent().app()).getNavigationManager()
-                .navigateToNewsContentScreen(item.getId());
+        mPresenter.testChangeItem();
+//        ((App) App.getAppComponent().app()).getNavigationManager()
+//                .navigateToNewsContentScreen(item.getId());
     }
 
     @Override

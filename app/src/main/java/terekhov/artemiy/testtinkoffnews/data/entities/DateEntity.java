@@ -3,15 +3,18 @@ package terekhov.artemiy.testtinkoffnews.data.entities;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import io.objectbox.annotation.Entity;
+
 /**
  * Created by Artemiy Terekhov on 11.01.2018.
  * Copyright (c) 2018 Artemiy Terekhov. All rights reserved.
  */
 
+@Entity
 public class DateEntity extends BaseEntity {
     @SerializedName("milliseconds")
     @Expose
-    private Long mDate;
+    private Long date;
 
     public DateEntity() {
         super();
@@ -19,15 +22,15 @@ public class DateEntity extends BaseEntity {
 
     public DateEntity(Long date) {
         super();
-        mDate = date;
+        this.date = date;
     }
 
     public Long getDate() {
-        return mDate;
+        return date;
     }
 
     public void setDate(Long date) {
-        this.mDate = date;
+        this.date = date;
     }
 
     @Override
@@ -40,7 +43,7 @@ public class DateEntity extends BaseEntity {
         DateEntity entity = (DateEntity) obj;
 
         if (entity.getDate() != null) {
-            mDate = entity.getDate();
+            date = entity.getDate();
         }
     }
 }

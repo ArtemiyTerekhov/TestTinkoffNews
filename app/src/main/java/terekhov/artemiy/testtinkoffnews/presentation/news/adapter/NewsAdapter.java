@@ -10,11 +10,13 @@ import android.view.ViewGroup;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import io.reactivex.Flowable;
 import io.reactivex.Scheduler;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Action;
 import terekhov.artemiy.testtinkoffnews.R;
 import terekhov.artemiy.testtinkoffnews.domain.model.News;
 
@@ -54,11 +56,15 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsViewHolder> {
         mItems = news;
     }
 
+    private static List<News> cloneList(List<News> list) {
+        return (List<News>) ((ArrayList<News>)list).clone();
+    }
+
     public void updateWithDiff(
             @NonNull List<News> items,
             @NonNull Scheduler subscribeScheduler,
-            @NonNull Scheduler observeScheduler) {
-        Pair<List<News>, DiffUtil.DiffResult> initialPair = Pair.create(mItems, null);
+            @NonNull Scheduler observeScheduler, Action completed) {
+        Pair<List<News>, DiffUtil.DiffResult> initialPair = Pair.create(cloneList(mItems), null);
         addDisposable(Flowable.just(items)
                 .onBackpressureLatest()
                 .scan(initialPair, (pair, next) -> {
@@ -73,6 +79,9 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsViewHolder> {
                 .subscribe(diffResultPair -> {
                     addToBottom(diffResultPair.first, true);
                     diffResultPair.second.dispatchUpdatesTo(this);
+                    if (completed != null) {
+                        completed.run();
+                    }
                 }));
     }
 

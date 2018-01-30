@@ -2,6 +2,7 @@ package terekhov.artemiy.testtinkoffnews.presentation.news;
 
 import java.util.List;
 
+import io.reactivex.Observable;
 import terekhov.artemiy.testtinkoffnews.domain.interactor.SchedulerProvider;
 import terekhov.artemiy.testtinkoffnews.domain.model.News;
 import terekhov.artemiy.testtinkoffnews.presentation.mvp.BasePresenter;
@@ -22,6 +23,7 @@ public interface NewsContract {
         int getItemsCount();
 
         void showError(String message);
+        //void executeObservable();
     }
 
     interface Presenter extends BasePresenter<View> {
@@ -29,5 +31,9 @@ public interface NewsContract {
         void fetchNews(boolean isRefresh);
 
         SchedulerProvider getSchedulerProvider();
+
+        //Observable<List<News>> getObservable();
+
+        void testChangeItem();
     }
 }

@@ -4,7 +4,10 @@ import android.support.annotation.NonNull;
 
 import java.util.List;
 
+import io.reactivex.Completable;
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import terekhov.artemiy.testtinkoffnews.App;
 import terekhov.artemiy.testtinkoffnews.data.entities.NewsContentEntity;
 import terekhov.artemiy.testtinkoffnews.data.entities.NewsEntity;
@@ -15,7 +18,7 @@ import terekhov.artemiy.testtinkoffnews.data.net.news.NewsAPIService;
  * Copyright (c) 2018 Artemiy Terekhov. All rights reserved.
  */
 
-public class NewsRemoteDataStore implements NewsDataStore {
+public class NewsRemoteDataStore implements AbsNewsRemoteDataStore {
     private final NewsAPIService mAPIService;
 
     public NewsRemoteDataStore() {
@@ -23,23 +26,12 @@ public class NewsRemoteDataStore implements NewsDataStore {
     }
 
     @Override
-    public Observable<List<NewsEntity>> getNews() {
+    public Flowable<List<NewsEntity>> getNews() {
         return mAPIService.getNews();
     }
 
     @Override
-    public Observable<List<NewsEntity>> saveNews(@NonNull List<NewsEntity> news) {
-        return Observable.empty();
-    }
-
-    @Override
-    public Observable<NewsContentEntity> getNewsContent(@NonNull String id) {
+    public Single<NewsContentEntity> getNewsContent(@NonNull String id) {
         return mAPIService.getNewsContent(id);
-    }
-
-    @Override
-    public Observable<NewsContentEntity> saveNewsContent(@NonNull String id,
-            @NonNull NewsContentEntity newsContentEntity) {
-        return Observable.empty();
     }
 }

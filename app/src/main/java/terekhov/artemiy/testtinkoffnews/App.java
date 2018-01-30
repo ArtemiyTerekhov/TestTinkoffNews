@@ -25,8 +25,7 @@ import terekhov.artemiy.testtinkoffnews.presentation.NavigationManager;
 
 public class App extends Application {
     private static AppComponent mAppComponent;
-    private volatile boolean mIsNetworkConnected;
-    private boolean mNetworkInit = false; // Only for test app
+    private volatile boolean mIsNetworkConnected = true;
     private Observable<Connectivity> mNetworkObservable;
     private CompositeDisposable mDisposables;
 
@@ -71,14 +70,13 @@ public class App extends Application {
     }
 
     public boolean isNetworkConnected() {
-        return mIsNetworkConnected || !mNetworkInit;
+        return mIsNetworkConnected;
     }
 
     public void subscribe() {
         mNetworkObservable.subscribe(connectivity -> {
             final NetworkInfo.State state = connectivity.getState();
             setNetworkConnected(state == NetworkInfo.State.CONNECTED);
-            mNetworkInit = true;
         });
     }
 
@@ -96,9 +94,5 @@ public class App extends Application {
 
     private void addDisposable(@NonNull Disposable disposable) {
         mDisposables.add(disposable);
-    }
-
-    public boolean isNetworkInit() {
-        return mNetworkInit;
     }
 }

@@ -3,70 +3,75 @@ package terekhov.artemiy.testtinkoffnews.data.entities;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import io.objectbox.annotation.Entity;
+import io.objectbox.annotation.Transient;
+
 /**
  * Created by Artemiy Terekhov on 11.01.2018.
  * Copyright (c) 2018 Artemiy Terekhov. All rights reserved.
  */
 
+@Entity
 public class TitleEntity extends BaseEntity {
     @SerializedName("id")
     @Expose
-    private String mId;
+    private String id;
     @SerializedName("name")
     @Expose
-    private String mName;
+    private String name;
     @SerializedName("text")
     @Expose
-    private String mText;
+    private String text;
     @SerializedName("publicationDate")
     @Expose
-    private DateEntity mPublicationDate;
+    @Transient
+    private DateEntity publicationDate;
     @SerializedName("bankInfoTypeId")
     @Expose
-    private Long mBankInfoTypeId;
+    private Long bankInfoTypeId;
 
     public TitleEntity() {
         super();
     }
 
     public String getId() {
-        return mId;
+        return id;
     }
 
     public void setId(String id) {
-        this.mId = id;
+        this.id = id;
     }
 
     public String getName() {
-        return mName;
+        return name;
     }
 
     public void setName(String name) {
-        this.mName = name;
+        this.name = name;
     }
 
     public String getText() {
-        return mText;
+        return text;
     }
 
     public void setText(String text) {
-        this.mText = text;
+        this.text = text;
     }
 
     public DateEntity getPublicationDate() {
-        return mPublicationDate;
+        return publicationDate;
     }
 
     public void setPublicationDate(DateEntity publicationDate) {
-        this.mPublicationDate = publicationDate;
+        this.publicationDate = publicationDate;
     }
 
     public Long getBankInfoTypeId() {
-        return mBankInfoTypeId;
+        return bankInfoTypeId;
     }
 
     public void setBankInfoTypeId(Long bankInfoTypeId) {
-        this.mBankInfoTypeId = bankInfoTypeId;
+        this.bankInfoTypeId = bankInfoTypeId;
     }
 
     @Override
@@ -79,27 +84,27 @@ public class TitleEntity extends BaseEntity {
         TitleEntity entity = (TitleEntity) obj;
 
         if (entity.getId() != null) {
-            mId = entity.getId();
+            id = entity.getId();
         }
 
         if (entity.getName() != null) {
-            mName = entity.getName();
+            name = entity.getName();
         }
 
         if (entity.getText() != null) {
-            mText = entity.getText();
+            text = entity.getText();
         }
 
         if (entity.getPublicationDate() != null) {
-            if (mPublicationDate == null) {
-                mPublicationDate = entity.getPublicationDate();
+            if (publicationDate == null) {
+                publicationDate = entity.getPublicationDate();
             } else {
-                mPublicationDate.mergeWith(entity.getPublicationDate());
+                publicationDate.mergeWith(entity.getPublicationDate());
             }
         }
 
         if (entity.getBankInfoTypeId() != null) {
-            mBankInfoTypeId = entity.getBankInfoTypeId();
+            bankInfoTypeId = entity.getBankInfoTypeId();
         }
     }
 }

@@ -1,14 +1,18 @@
 package terekhov.artemiy.testtinkoffnews.presentation.news;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.util.Pair;
 
 import java.util.Collections;
 import java.util.List;
 
+import io.reactivex.Observable;
 import terekhov.artemiy.testtinkoffnews.App;
 import terekhov.artemiy.testtinkoffnews.domain.interactor.SchedulerProvider;
 import terekhov.artemiy.testtinkoffnews.domain.model.News;
 import terekhov.artemiy.testtinkoffnews.domain.news.GetNewsUseCase;
+import terekhov.artemiy.testtinkoffnews.domain.news.SyncNewsUseCase;
 
 /**
  * Created by Artemiy Terekhov on 11.01.2018.
@@ -20,11 +24,13 @@ public class NewsPresenter implements NewsContract.Presenter {
 
     private NewsContract.View mView;
     private GetNewsUseCase mGetNewsUseCase;
+    private SyncNewsUseCase mSyncNewsUseCase;
     private SchedulerProvider mSchedulerProvider;
 
     public NewsPresenter() {
         mSchedulerProvider = App.getAppComponent().schedulerProvider();
         mGetNewsUseCase = new GetNewsUseCase(mSchedulerProvider);
+        mSyncNewsUseCase = new SyncNewsUseCase(mSchedulerProvider);
     }
 
     @Override
@@ -32,10 +38,21 @@ public class NewsPresenter implements NewsContract.Presenter {
         mView = view;
 
         mGetNewsUseCase.getObservable(this::onError)
-                .subscribe(pair -> onUpdate(pair.first, pair.second));
+                .subscribe(this::onLocalNews);
+
+        mSyncNewsUseCase.getObservable(this::onError)
+                .subscribe(result -> {});
 
         if (mView.getItemsCount() == 0) {
             fetchNews(false);
+        }
+    }
+
+    private void onLocalNews(@NonNull Pair<List<News>, Boolean> pair) {
+        if (pair.first != null && pair.first.isEmpty()) {
+            mSyncNewsUseCase.execute(null);
+        } else {
+            onUpdate(pair.first, pair.second);
         }
     }
 
@@ -75,7 +92,7 @@ public class NewsPresenter implements NewsContract.Presenter {
 
     @Override
     public void swipeToRefresh() {
-        fetchNews(true);
+        mSyncNewsUseCase.execute(null);
     }
 
     @Override
@@ -92,6 +109,11 @@ public class NewsPresenter implements NewsContract.Presenter {
     @Override
     public SchedulerProvider getSchedulerProvider() {
         return mSchedulerProvider;
+    }
+
+    @Override
+    public void testChangeItem() {
+        mGetNewsUseCase.testChangeItem();
     }
 
     private void showLoadingProgress() {

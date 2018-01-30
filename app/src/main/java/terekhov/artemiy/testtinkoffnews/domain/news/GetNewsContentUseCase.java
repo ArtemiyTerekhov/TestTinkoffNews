@@ -27,9 +27,7 @@ public class GetNewsContentUseCase extends UseCase<NewsContent, GetNewsContentUs
 
     @Override
     public Observable<NewsContent> buildUseCaseObservable(Request request) {
-        return mAppRepository.getNewsContent(request.getId(), request.getRequestType())
-                .flatMap(entity -> mAppRepository
-                        .saveNewsContent(request.getId(), entity, request.getRequestType()))
+        return mAppRepository.getNewsContent(request.getId()).toObservable()
                 .map(NewsContentEntityDataMapper::transform);
     }
 
