@@ -1,6 +1,7 @@
 package terekhov.artemiy.testtinkoffnews.data.repository.news;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import java.util.List;
 
@@ -19,6 +20,7 @@ import terekhov.artemiy.testtinkoffnews.di.component.DaggerDataStoreComponent;
 import terekhov.artemiy.testtinkoffnews.di.component.DataStoreComponent;
 import terekhov.artemiy.testtinkoffnews.di.module.DataStoreModule;
 import terekhov.artemiy.testtinkoffnews.domain.interactor.SchedulerProvider;
+import terekhov.artemiy.testtinkoffnews.domain.model.News;
 
 /**
  * Created by Artemiy Terekhov on 11.01.2018.
@@ -38,7 +40,7 @@ public class NewsRepository {
         component.inject(this);
     }
 
-    public void registerNewsObserver(DataObserver<List<NewsEntity>> dataObserver) {
+    public void registerNewsObserver(@Nullable DataObserver<List<NewsEntity>> dataObserver) {
         mLocalDataStore.registerNewsObserver(dataObserver);
     }
 
@@ -46,35 +48,40 @@ public class NewsRepository {
         mLocalDataStore.unregisterNewsObserver();
     }
 
-    @DebugLog
-    public Flowable<List<NewsEntity>> getNews() {
-        return mLocalDataStore.getNews();
+    public void registerNewsContentObserver(
+            @NonNull String id, @Nullable DataObserver<List<NewsContentEntity>> dataObserver) {
+        mLocalDataStore.registerNewsContentObserver(id, dataObserver);
+    }
+
+    public void unregisterNewsContentObserver() {
+        mLocalDataStore.unregisterNewsContentObserver();
     }
 
     @DebugLog
-    public Completable saveNews(@NonNull List<NewsEntity> news) {
-        return mLocalDataStore.saveNews(news);
+    public Flowable<List<NewsEntity>> getNews() {
+        return mLocalDataStore.getNews();
     }
 
     public Single<NewsContentEntity> getNewsContent(@NonNull String id) {
         return mLocalDataStore.getNewsContent(id);
     }
 
-    public Completable saveNewsContent(@NonNull String id, @NonNull NewsContentEntity newsContentEntity) {
+    @DebugLog
+    public Observable<Boolean> saveNews(@NonNull final List<NewsEntity> news) {
+        return mLocalDataStore.saveNews(news);
+    }
+
+    public Observable<Boolean> saveNewsContent(@NonNull String id, @NonNull NewsContentEntity newsContentEntity) {
         return mLocalDataStore.saveNewsContent(id, newsContentEntity);
     }
 
-    public Completable syncNews() {
-        return Completable.merge(
-                mRemoteDataStore.getNews().map(this::saveNews)
-        );
+    public Observable<Boolean> syncNews() {
+        return mRemoteDataStore.getNews().toObservable().flatMap(this::saveNews);
     }
 
-    public Completable syncNewsContent(@NonNull String id) {
-        return Completable.merge(
-                mRemoteDataStore.getNewsContent(id).toFlowable()
-                        .map(entity -> saveNewsContent(id, entity))
-        );
+    public Observable<Boolean> syncNewsContent(@NonNull String id) {
+        return mRemoteDataStore.getNewsContent(id).toFlowable().toObservable()
+                .flatMap(entity -> saveNewsContent(id, entity));
     }
 
     public void testChangeItem() {

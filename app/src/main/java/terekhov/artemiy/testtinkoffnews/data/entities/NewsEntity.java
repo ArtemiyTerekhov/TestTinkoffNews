@@ -9,10 +9,13 @@ import java.util.Collections;
 import java.util.List;
 
 import io.objectbox.annotation.Backlink;
+import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Index;
 import io.objectbox.annotation.Transient;
 import io.objectbox.relation.ToOne;
+import terekhov.artemiy.testtinkoffnews.data.entities.converter.DataEntityConverter;
+import terekhov.artemiy.testtinkoffnews.data.entities.converter.EntityConverter;
 
 /**
  * Created by Artemiy Terekhov on 11.01.2018.
@@ -22,29 +25,22 @@ import io.objectbox.relation.ToOne;
 @Entity
 public class NewsEntity extends BaseEntity implements Comparable<NewsEntity> {
     @SerializedName("id")
-    @Expose
     @Index
     private String id;
     @SerializedName("name")
-    @Expose
     private String name;
     @SerializedName("text")
-    @Expose
     private String text;
     @SerializedName("publicationDate")
-    @Expose
-    @Transient
+    @Convert(converter = DataEntityConverter.class, dbType = Long.class)
     private DateEntity publicationDate;
     @SerializedName("bankInfoTypeId")
-    @Expose
     private Long bankInfoTypeId;
 
-    @Backlink
+    //@Backlink
     private ToOne<NewsContentEntity> newsContentRelation;
-    private ToOne<DateEntity> publicationDateRelation;
 
     public NewsEntity() {
-        super();
     }
 
     public String getId() {
@@ -87,48 +83,6 @@ public class NewsEntity extends BaseEntity implements Comparable<NewsEntity> {
         this.bankInfoTypeId = bankInfoTypeId;
     }
 
-    @Override
-    public <T> void mergeWith(T obj) {
-        super.mergeWith(obj);
-        if (this == obj) {
-            return;
-        }
-
-        NewsEntity entity = (NewsEntity) obj;
-
-        if (entity.getId() != null) {
-            id = entity.getId();
-        }
-
-        if (entity.getName() != null) {
-            name = entity.getName();
-        }
-
-        if (entity.getText() != null) {
-            text = entity.getText();
-        }
-
-        if (entity.getPublicationDate() != null) {
-            if (publicationDate == null) {
-                publicationDate = entity.getPublicationDate();
-            } else {
-                publicationDate.mergeWith(entity.getPublicationDate());
-            }
-        }
-
-        if (entity.getBankInfoTypeId() != null) {
-            bankInfoTypeId = entity.getBankInfoTypeId();
-        }
-    }
-
-    public ToOne<DateEntity> getPublicationDateRelation() {
-        return publicationDateRelation;
-    }
-
-    public void setPublicationDateRelation() {
-        publicationDateRelation.setTarget(publicationDate);
-    }
-
     public ToOne<NewsContentEntity> getNewsContentRelation() {
         return newsContentRelation;
     }
@@ -146,7 +100,7 @@ public class NewsEntity extends BaseEntity implements Comparable<NewsEntity> {
         if (o1.getPublicationDate() == null || o2.getPublicationDate() == null) {
             return 0;
         }
-        return o2.getPublicationDate().getDate().compareTo(o1.getPublicationDate().getDate());
+        return Long.compare(o2.getPublicationDate().getDate(), o1.getPublicationDate().getDate());
     }
 
     public static List<NewsEntity> sort(@NonNull List<NewsEntity> src) {

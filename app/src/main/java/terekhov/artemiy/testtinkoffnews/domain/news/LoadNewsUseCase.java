@@ -1,15 +1,10 @@
 package terekhov.artemiy.testtinkoffnews.domain.news;
 
-import android.support.annotation.Nullable;
-import android.support.v4.util.Pair;
-
-import java.util.Collections;
 import java.util.List;
 
-import io.objectbox.reactive.DataObserver;
-import io.reactivex.Completable;
 import io.reactivex.Observable;
 import terekhov.artemiy.testtinkoffnews.App;
+import terekhov.artemiy.testtinkoffnews.data.db.exception.MissingDataException;
 import terekhov.artemiy.testtinkoffnews.data.entities.NewsEntity;
 import terekhov.artemiy.testtinkoffnews.data.entities.mapper.NewsEntityDataMapper;
 import terekhov.artemiy.testtinkoffnews.data.repository.DataStore;
@@ -26,35 +21,33 @@ import static terekhov.artemiy.testtinkoffnews.data.repository.DataStore.TYPE_RE
  * Copyright (c) 2018 Artemiy Terekhov. All rights reserved.
  */
 
-public class GetNewsUseCase extends UseCase<Pair<List<News>, Boolean>, GetNewsUseCase.Request> {
-    private final NewsRepository mAppRepository;
+public class LoadNewsUseCase extends UseCase<List<NewsEntity>, Void> {
+    private NewsRepository mAppRepository;
 
-    public GetNewsUseCase(SchedulerProvider schedulerProvider) {
+    public LoadNewsUseCase(SchedulerProvider schedulerProvider) {
         super(schedulerProvider.io(), schedulerProvider.ui());
-        mAppRepository = App.getAppComponent().newsRepository();
+        mAppRepository = ((App) App.getAppComponent().app()).newsRepository();
     }
 
     @Override
-    public Observable<Pair<List<News>, Boolean>> buildUseCaseObservable(GetNewsUseCase.Request params) {
+    public Observable<List<NewsEntity>> buildUseCaseObservable(Void aVoid) {
         return mAppRepository.getNews()
-                .map(NewsEntityDataMapper::transform)
-                .map(News::sort).toObservable()
-                .map(news -> Pair.create(news, params.isClean()));
+                //.map(NewsEntityDataMapper::transform)
+                //.map(News::sort)
+                .toObservable();
     }
 
-    @Override
-    public void execute(@Nullable final Request request) {
+    public void registerObserver() {
         mAppRepository.registerNewsObserver(data -> {
             if (!data.isEmpty()) {
-                doOnNext(Pair.create(NewsEntityDataMapper.transform(NewsEntity.sort(data)),true));
+                doOnNext(data);
+            } else {
+                doOnError(new MissingDataException());
             }
         });
-        super.execute(request);
     }
 
-    @Override
-    public void clear() {
-        super.clear();
+    public void unregisterObserver() {
         if (mAppRepository != null) {
             mAppRepository.unregisterNewsObserver();
         }

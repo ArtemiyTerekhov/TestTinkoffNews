@@ -3,35 +3,37 @@ package terekhov.artemiy.testtinkoffnews.data.entities;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Transient;
+import terekhov.artemiy.testtinkoffnews.data.entities.converter.DataEntityConverter;
+import terekhov.artemiy.testtinkoffnews.data.entities.converter.EntityConverter;
 
 /**
  * Created by Artemiy Terekhov on 11.01.2018.
  * Copyright (c) 2018 Artemiy Terekhov. All rights reserved.
  */
 
-@Entity
-public class TitleEntity extends BaseEntity {
-    @SerializedName("id")
-    @Expose
+public class TitleEntity {
+    public static final String SN_ID = "id";
+    public static final String SN_NAME = "name";
+    public static final String SN_TEXT = "text";
+    public static final String SN_PUBLICATION_DATE = "publicationDate";
+    public static final String SN_BANK_INFO_TYPE_ID = "bankInfoTypeId";
+
+    @SerializedName(SN_ID)
     private String id;
-    @SerializedName("name")
-    @Expose
+    @SerializedName(SN_NAME)
     private String name;
-    @SerializedName("text")
-    @Expose
+    @SerializedName(SN_TEXT)
     private String text;
-    @SerializedName("publicationDate")
-    @Expose
-    @Transient
+    @SerializedName(SN_PUBLICATION_DATE)
+    @Convert(converter = DataEntityConverter.class, dbType = Long.class)
     private DateEntity publicationDate;
-    @SerializedName("bankInfoTypeId")
-    @Expose
+    @SerializedName(SN_BANK_INFO_TYPE_ID)
     private Long bankInfoTypeId;
 
     public TitleEntity() {
-        super();
     }
 
     public String getId() {
@@ -75,36 +77,27 @@ public class TitleEntity extends BaseEntity {
     }
 
     @Override
-    public <T> void mergeWith(T obj) {
-        super.mergeWith(obj);
-        if (this == obj) {
-            return;
-        }
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
-        TitleEntity entity = (TitleEntity) obj;
+        TitleEntity that = (TitleEntity) o;
 
-        if (entity.getId() != null) {
-            id = entity.getId();
-        }
+        if (id != null ? !id.equals(that.id) : that.id != null) return false;
+        if (name != null ? !name.equals(that.name) : that.name != null) return false;
+        if (text != null ? !text.equals(that.text) : that.text != null) return false;
+        if (publicationDate != null ? !publicationDate.equals(that.publicationDate) : that.publicationDate != null)
+            return false;
+        return bankInfoTypeId != null ? bankInfoTypeId.equals(that.bankInfoTypeId) : that.bankInfoTypeId == null;
+    }
 
-        if (entity.getName() != null) {
-            name = entity.getName();
-        }
-
-        if (entity.getText() != null) {
-            text = entity.getText();
-        }
-
-        if (entity.getPublicationDate() != null) {
-            if (publicationDate == null) {
-                publicationDate = entity.getPublicationDate();
-            } else {
-                publicationDate.mergeWith(entity.getPublicationDate());
-            }
-        }
-
-        if (entity.getBankInfoTypeId() != null) {
-            bankInfoTypeId = entity.getBankInfoTypeId();
-        }
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (text != null ? text.hashCode() : 0);
+        result = 31 * result + (publicationDate != null ? publicationDate.hashCode() : 0);
+        result = 31 * result + (bankInfoTypeId != null ? bankInfoTypeId.hashCode() : 0);
+        return result;
     }
 }

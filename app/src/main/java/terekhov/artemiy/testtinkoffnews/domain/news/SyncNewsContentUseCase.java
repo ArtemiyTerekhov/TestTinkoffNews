@@ -15,11 +15,11 @@ public class SyncNewsContentUseCase extends UseCase<Boolean, String> {
 
     public SyncNewsContentUseCase(SchedulerProvider schedulerProvider) {
         super(schedulerProvider.io(), schedulerProvider.ui());
-        mAppRepository = App.getAppComponent().newsRepository();
+        mAppRepository = ((App) App.getAppComponent().app()).newsRepository();
     }
 
     @Override
     public Observable<Boolean> buildUseCaseObservable(String id) {
-        return mAppRepository.syncNewsContent(id).toObservable();
+        return mAppRepository.syncNewsContent(id);
     }
 }

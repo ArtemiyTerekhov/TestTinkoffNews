@@ -90,8 +90,8 @@ dependencies {
 
     //NoSQL Database
     implementation 'com.snappydb:snappydb-lib:0.5.2'
-    implementation "io.objectbox:objectbox-android:$rootProject.ext.objectboxVersion"
-    annotationProcessor "io.objectbox:objectbox-processor:$rootProject.ext.objectboxVersion"
+//    implementation "io.objectbox:objectbox-android:$rootProject.ext.objectboxVersion"
+//    annotationProcessor "io.objectbox:objectbox-processor:$rootProject.ext.objectboxVersion"
 
     //Tests
     testImplementation "junit:junit:$rootProject.ext.junitVersion"

@@ -11,15 +11,15 @@ import terekhov.artemiy.testtinkoffnews.domain.interactor.UseCase;
  */
 
 public class SyncNewsUseCase extends UseCase<Boolean, Void> {
-    private final NewsRepository mAppRepository;
+    private NewsRepository mAppRepository;
 
     public SyncNewsUseCase(SchedulerProvider schedulerProvider) {
         super(schedulerProvider.io(), schedulerProvider.ui());
-        mAppRepository = App.getAppComponent().newsRepository();
+        mAppRepository = ((App) App.getAppComponent().app()).newsRepository();
     }
 
     @Override
     public Observable<Boolean> buildUseCaseObservable(Void aVoid) {
-        return mAppRepository.syncNews().toObservable();
+        return mAppRepository.syncNews();
     }
 }

@@ -3,47 +3,40 @@ package terekhov.artemiy.testtinkoffnews.data.entities;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-import io.objectbox.annotation.Entity;
-
 /**
  * Created by Artemiy Terekhov on 11.01.2018.
  * Copyright (c) 2018 Artemiy Terekhov. All rights reserved.
  */
 
-@Entity
-public class DateEntity extends BaseEntity {
+public class DateEntity {
     @SerializedName("milliseconds")
     @Expose
-    private Long date;
+    private long date;
 
     public DateEntity() {
-        super();
-    }
-
-    public DateEntity(Long date) {
-        super();
-        this.date = date;
-    }
-
-    public Long getDate() {
-        return date;
-    }
-
-    public void setDate(Long date) {
-        this.date = date;
+        date = 0;
     }
 
     @Override
-    public <T> void mergeWith(T obj) {
-        super.mergeWith(obj);
-        if (this == obj) {
-            return;
-        }
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
-        DateEntity entity = (DateEntity) obj;
+        DateEntity that = (DateEntity) o;
 
-        if (entity.getDate() != null) {
-            date = entity.getDate();
-        }
+        return date == that.date;
+    }
+
+    @Override
+    public int hashCode() {
+        return (int) (date ^ (date >>> 32));
+    }
+
+    public long getDate() {
+        return date;
+    }
+
+    public void setDate(long date) {
+        this.date = date;
     }
 }

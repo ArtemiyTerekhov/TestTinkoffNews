@@ -1,32 +1,29 @@
 package terekhov.artemiy.testtinkoffnews.data.repository.news;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import hugo.weaving.DebugLog;
 import io.objectbox.Box;
 import io.objectbox.BoxStore;
 import io.objectbox.android.AndroidScheduler;
 import io.objectbox.query.Query;
-import io.objectbox.query.QueryFilter;
 import io.objectbox.reactive.DataObserver;
 import io.objectbox.reactive.DataSubscription;
-import io.objectbox.reactive.DataSubscriptionList;
-import io.objectbox.reactive.ErrorObserver;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import terekhov.artemiy.testtinkoffnews.App;
-import terekhov.artemiy.testtinkoffnews.data.db.RxSnappyClient;
 import terekhov.artemiy.testtinkoffnews.data.db.exception.MissingDataException;
-import terekhov.artemiy.testtinkoffnews.data.entities.BaseEntity;
 import terekhov.artemiy.testtinkoffnews.data.entities.NewsContentEntity;
 import terekhov.artemiy.testtinkoffnews.data.entities.NewsEntity;
-import terekhov.artemiy.testtinkoffnews.data.entities.NewsEntity_;
-import terekhov.artemiy.testtinkoffnews.domain.interactor.SchedulerProvider;
+import terekhov.artemiy.testtinkoffnews.data.entities.mapper.NewsEntityDataMapper;
+import terekhov.artemiy.testtinkoffnews.domain.model.News;
 
 /**
  * Created by Artemiy Terekhov on 11.01.2018.
@@ -34,65 +31,98 @@ import terekhov.artemiy.testtinkoffnews.domain.interactor.SchedulerProvider;
  */
 
 public class NewsLocalDataStore implements AbsNewsLocalDataStore {
-    private BoxStore mBoxStore;
-
-    private Box<NewsEntity> newsBox;
-    private Query<NewsEntity> newsQuery;
-    private DataSubscription mSubscription;
+    private DataSubscription subscription;
+    private DataSubscription subscriptionNewsContent;
 
     public NewsLocalDataStore() {
-        mBoxStore = App.getAppComponent().boxStore();
-        newsBox = mBoxStore.boxFor(NewsEntity.class);
-        newsQuery = newsBox.query().build();
-        mBoxStore.boxFor(NewsEntity.class).removeAll();
+        // FIXME: 03.03.2018 only for test
+        BoxStore boxStore = ((App) App.getAppComponent().app()).boxStore();
+
+        boxStore.boxFor(NewsEntity.class).removeAll();
+        boxStore.boxFor(NewsContentEntity.class).removeAll();
     }
 
-    public void registerNewsObserver(DataObserver<List<NewsEntity>> dataObserver) {
-        mSubscription = newsQuery.subscribe()
-                .onError(th -> {
-
-                })
-                .transform(data -> {
-                    for (NewsEntity entity : data) {
-                        entity.setPublicationDate(entity.getPublicationDateRelation().getTarget());
-                    }
-                    return data;
-                })
-                .on(AndroidScheduler.mainThread())
-                .observer(dataObserver);
+    private Box<NewsEntity> newsBox() {
+        BoxStore boxStore = ((App) App.getAppComponent().app()).boxStore();
+        return boxStore.boxFor(NewsEntity.class);
     }
 
+    private Box<NewsContentEntity> newsContentBox() {
+        BoxStore boxStore = ((App) App.getAppComponent().app()).boxStore();
+        return boxStore.boxFor(NewsContentEntity.class);
+    }
+
+    /**
+     *
+     * @param dataObserver always type {@code DataObserver<List<?>>}
+     */
+    @Override
+    public void registerNewsObserver(@Nullable DataObserver<List<NewsEntity>> dataObserver) {
+        if (dataObserver != null) {
+            subscription = newsBox().query().build().subscribe()
+                    .onError(throwable -> Observable.error(new MissingDataException()))
+                    .on(AndroidScheduler.mainThread())
+                    .observer(dataObserver);
+        }
+    }
+
+    @Override
     public void unregisterNewsObserver() {
-        if (!mSubscription.isCanceled()) {
-            mSubscription.cancel();
+        if (subscription != null
+                && !subscription.isCanceled()) {
+            subscription.cancel();
+            subscription = null;
+        }
+    }
+
+    /**
+     *
+     * @param id news - filter for query
+     * @param dataObserver always type {@code DataObserver<List<?>>}
+     */
+    @Override
+    public void registerNewsContentObserver(@NonNull String id, DataObserver<List<NewsContentEntity>> dataObserver) {
+        if (dataObserver != null) {
+            subscriptionNewsContent = newsContentBox().query().filter(entity -> {
+                NewsEntity newsEntity = entity.getNewsRelation().getTarget();
+                return newsEntity != null && id.equals(newsEntity.getId());
+            }).build().subscribe()
+                    .onError(throwable -> Observable.error(new MissingDataException()))
+                    .on(AndroidScheduler.mainThread())
+                    .observer(dataObserver);
+        }
+    }
+
+    @Override
+    public void unregisterNewsContentObserver() {
+        if (subscriptionNewsContent != null
+                && !subscriptionNewsContent.isCanceled()) {
+            subscriptionNewsContent.cancel();
+            subscriptionNewsContent = null;
         }
     }
 
     @Override
     @DebugLog
     public Flowable<List<NewsEntity>> getNews() {
-        List<NewsEntity> news = newsQuery.find();
-        for (NewsEntity entity : news) {
-            entity.setPublicationDate(entity.getPublicationDateRelation().getTarget());
-        }
+        List<NewsEntity> news = newsBox().query().build().find();
         return Flowable.just(news);
     }
 
     @Override
     @DebugLog
-    public Completable saveNews(@NonNull List<NewsEntity> news) {
+    public Observable<Boolean> saveNews(@NonNull List<NewsEntity> news) {
         for (NewsEntity entity : news) {
-            entity.setPublicationDateRelation();
             entity.setPrimaryId(entity.getId().hashCode());
         }
-        newsBox.put(news);
+        newsBox().put(news);
 
-        return Completable.complete();
+        return Observable.just(true);
     }
 
     @Override
     public Single<NewsContentEntity> getNewsContent(@NonNull String id) {
-        Query<NewsEntity> newsQuery = newsBox.query().filter(entity -> entity.getId().equals(id)).build();
+        Query<NewsEntity> newsQuery = newsBox().query().filter(entity -> entity.getId().equals(id)).build();
         NewsEntity newsEntity = newsQuery.findFirst();
         if (newsEntity != null) {
             NewsContentEntity contentEntity = newsEntity.getNewsContentRelation().getTarget();
@@ -102,32 +132,34 @@ public class NewsLocalDataStore implements AbsNewsLocalDataStore {
     }
 
     @Override
-    public Completable saveNewsContent(
+    public Observable<Boolean> saveNewsContent(
             @NonNull String id, @NonNull NewsContentEntity newsContentEntity) {
-        Query<NewsEntity> newsQuery = newsBox.query().filter(entity -> entity.getId().equals(id)).build();
-        NewsEntity newsEntity = newsQuery.findFirst();
+        Query<NewsEntity> newsQuery = newsBox().query().filter(entity -> entity.getId().equals(id)).build();
+        List<NewsEntity> entities = newsQuery.find();
+        NewsEntity newsEntity = !entities.isEmpty() ? entities.get(0) : null;
         if (newsEntity != null) {
-            Box<NewsContentEntity> newsContentBox = mBoxStore.boxFor(NewsContentEntity.class);
+            BoxStore boxStore = ((App) App.getAppComponent().app()).boxStore();
+            Box<NewsContentEntity> newsContentBox = boxStore.boxFor(NewsContentEntity.class);
             newsContentEntity.getNewsRelation().setTarget(newsEntity);
             newsEntity.getNewsContentRelation().setTarget(newsContentEntity);
             newsContentBox.put(newsContentEntity);
-            return Completable.complete();
+            return Observable.just(true);
         }
 
-        return Completable.error(new MissingDataException());
+        return Observable.error(new MissingDataException());
     }
 
     public void testChangeItem() {
-        Query<NewsEntity> query = newsBox.query()
+        Query<NewsEntity> query = newsBox().query()
                 .filter(entity -> entity.getId().equals("10024")).build();
         List<NewsEntity> entities = query.find();
         if (!entities.isEmpty()) {
             NewsEntity entity = entities.get(0);
-            //entity.setText("Измененный текст");
-            //newsBox.put(entity);
-            if (entity != null) {
-                newsBox.remove(entity.getPrimaryId());
-            }
+            entity.setText("Измененный текст : " + new Random().nextInt(100));
+            newsBox().put(entity);
+//            if (entity != null) {
+//                newsBox().remove(entity.getPrimaryId());
+//            }
         }
     }
 }

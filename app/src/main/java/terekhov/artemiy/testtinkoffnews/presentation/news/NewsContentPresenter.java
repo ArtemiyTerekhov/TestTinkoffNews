@@ -3,9 +3,12 @@ package terekhov.artemiy.testtinkoffnews.presentation.news;
 import android.os.Bundle;
 
 import terekhov.artemiy.testtinkoffnews.App;
+import terekhov.artemiy.testtinkoffnews.data.db.exception.MissingDataException;
+import terekhov.artemiy.testtinkoffnews.data.entities.NewsContentEntity;
+import terekhov.artemiy.testtinkoffnews.data.entities.mapper.NewsContentEntityDataMapper;
 import terekhov.artemiy.testtinkoffnews.domain.interactor.SchedulerProvider;
-import terekhov.artemiy.testtinkoffnews.domain.model.NewsContent;
-import terekhov.artemiy.testtinkoffnews.domain.news.GetNewsContentUseCase;
+import terekhov.artemiy.testtinkoffnews.domain.news.LoadNewsContentUseCase;
+import terekhov.artemiy.testtinkoffnews.domain.news.SyncNewsContentUseCase;
 
 /**
  * Created by Artemiy Terekhov on 11.01.2018.
@@ -19,26 +22,34 @@ public class NewsContentPresenter implements NewsContentContact.Presenter {
 
     private NewsContentContact.View mView;
     private String mId;
-    private GetNewsContentUseCase mGetNewsContentUseCase;
+    private LoadNewsContentUseCase mLoadNewsContentUseCase;
+    private SyncNewsContentUseCase mSyncNewsContentUseCase;
     private SchedulerProvider mSchedulerProvider;
 
     public NewsContentPresenter() {
         mSchedulerProvider = App.getAppComponent().schedulerProvider();
-        mGetNewsContentUseCase = new GetNewsContentUseCase(mSchedulerProvider);
+        mLoadNewsContentUseCase = new LoadNewsContentUseCase(mSchedulerProvider);
+        mSyncNewsContentUseCase = new SyncNewsContentUseCase(mSchedulerProvider);
     }
 
     @Override
     public void subscribe(NewsContentContact.View view) {
         mView = view;
 
-        mGetNewsContentUseCase.getObservable(this::onError)
+        mLoadNewsContentUseCase.getObservable(this::onError)
                 .subscribe(this::onUpdate);
+
+        mSyncNewsContentUseCase.getObservable(this::onError)
+                .subscribe((result) -> {});
 
         fetchNewsContent();
     }
 
     @Override
     public void unsubscribe() {
+        if (mLoadNewsContentUseCase != null) {
+            mLoadNewsContentUseCase.unregisterObserver();
+        }
         mView = null;
     }
 
@@ -80,9 +91,20 @@ public class NewsContentPresenter implements NewsContentContact.Presenter {
     public void fetchNewsContent() {
         showLoadingProgress();
 
-        if (mGetNewsContentUseCase != null) {
-            mGetNewsContentUseCase.execute(
-                    new GetNewsContentUseCase.Request.Builder(mId).build());
+        if (mLoadNewsContentUseCase != null) {
+            mLoadNewsContentUseCase.registerObserver(
+                    new LoadNewsContentUseCase.Request.Builder(mId).build());
+        }
+    }
+
+    @Override
+    public void testChangeItem() {
+        mLoadNewsContentUseCase.testChangeItem();
+    }
+
+    public void syncNewsContent() {
+        if (mSyncNewsContentUseCase != null) {
+            mSyncNewsContentUseCase.execute(mId);
         }
     }
 
@@ -100,6 +122,10 @@ public class NewsContentPresenter implements NewsContentContact.Presenter {
 
     private void onError(Throwable throwable) {
         if (isViewBound()) {
+            if (throwable instanceof MissingDataException) {
+                syncNewsContent();
+                return;
+            }
             // Don't check exception type in test app
             mView.showError(throwable.getMessage());
 //            if (throwable instanceof NoConnectivityException
@@ -114,9 +140,9 @@ public class NewsContentPresenter implements NewsContentContact.Presenter {
         hideLoadingProgress();
     }
 
-    private void onUpdate(NewsContent content) {
+    private void onUpdate(NewsContentEntity content) {
         if (isViewBound()) {
-            mView.update(content);
+            mView.update(NewsContentEntityDataMapper.transform(content));
         }
         hideLoadingProgress();
     }

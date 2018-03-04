@@ -3,9 +3,14 @@ package terekhov.artemiy.testtinkoffnews.data.entities;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import io.objectbox.annotation.Backlink;
+import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Transient;
 import io.objectbox.relation.ToOne;
+import terekhov.artemiy.testtinkoffnews.data.entities.converter.DataEntityConverter;
+import terekhov.artemiy.testtinkoffnews.data.entities.converter.EntityConverter;
+import terekhov.artemiy.testtinkoffnews.data.entities.converter.TitleEntityConverter;
 
 /**
  * Created by Artemiy Terekhov on 11.01.2018.
@@ -15,35 +20,25 @@ import io.objectbox.relation.ToOne;
 @Entity
 public class NewsContentEntity extends BaseEntity {
     @SerializedName("title")
-    @Expose
-    @Transient
+    @Convert(converter = TitleEntityConverter.class, dbType = String.class)
     private TitleEntity title;
     @SerializedName("creationDate")
-    @Expose
-    @Transient
+    @Convert(converter = DataEntityConverter.class, dbType = Long.class)
     private DateEntity creationDate;
     @SerializedName("lastModificationDate")
-    @Expose
-    @Transient
+    @Convert(converter = DataEntityConverter.class, dbType = Long.class)
     private DateEntity lastModificationDate;
     @SerializedName("content")
-    @Expose
     private String content;
     @SerializedName("bankInfoTypeId")
-    @Expose
     private Long bankInfoTypeId;
     @SerializedName("typeId")
-    @Expose
     private String typeId;
 
+    //@Backlink
     private ToOne<NewsEntity> newsRelation;
 
-    private ToOne<TitleEntity> titleRelation;
-    private ToOne<DateEntity> creationDateRelation;
-    private ToOne<DateEntity> lastModificationDateRelation;
-
     public NewsContentEntity() {
-        super();
     }
 
     public TitleEntity getTitle() {
@@ -94,81 +89,42 @@ public class NewsContentEntity extends BaseEntity {
         this.typeId = typeId;
     }
 
-    @Override
-    public <T> void mergeWith(T obj) {
-        super.mergeWith(obj);
-        if (this == obj) {
-            return;
-        }
-
-        NewsContentEntity entity = (NewsContentEntity) obj;
-
-        if (entity.getTitle() != null) {
-            if (title == null) {
-                title = entity.getTitle();
-            } else {
-                title.mergeWith(entity.getTitle());
-            }
-        }
-
-        if (entity.getCreationDate() != null) {
-            if (creationDate == null) {
-                creationDate = entity.getCreationDate();
-            } else {
-                creationDate.mergeWith(entity.getCreationDate());
-            }
-        }
-
-        if (entity.getLastModificationDate() != null) {
-            if (lastModificationDate == null) {
-                lastModificationDate = entity.getLastModificationDate();
-            } else {
-                lastModificationDate.mergeWith(entity.getLastModificationDate());
-            }
-        }
-
-        if (entity.getContent() != null) {
-            content = entity.getContent();
-        }
-
-        if (entity.getTypeId() != null) {
-            typeId = entity.getTypeId();
-        }
-
-        if (entity.getBankInfoTypeId() != null) {
-            bankInfoTypeId = entity.getBankInfoTypeId();
-        }
-    }
-
-    public ToOne<TitleEntity> getTitleRelation() {
-        return titleRelation;
-    }
-
-    public ToOne<DateEntity> getCreationDateRelation() {
-        return creationDateRelation;
-    }
-
-    public ToOne<DateEntity> getLastModificationDateRelation() {
-        return lastModificationDateRelation;
-    }
-
-    public void setTitleRelation() {
-        titleRelation.setTarget(title);
-    }
-
-    public void setCreationDateRelation() {
-        creationDateRelation.setTarget(creationDate);
-    }
-
-    public void setLastModificationDateRelation() {
-        lastModificationDateRelation.setTarget(lastModificationDate);
-    }
-
     public ToOne<NewsEntity> getNewsRelation() {
         return newsRelation;
     }
 
     public void setNewsRelation(ToOne<NewsEntity> newsRelation) {
         this.newsRelation = newsRelation;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        NewsContentEntity that = (NewsContentEntity) o;
+
+        if (title != null ? !title.equals(that.title) : that.title != null) return false;
+        if (creationDate != null ? !creationDate.equals(that.creationDate) : that.creationDate != null)
+            return false;
+        if (lastModificationDate != null ? !lastModificationDate.equals(that.lastModificationDate) : that.lastModificationDate != null)
+            return false;
+        if (content != null ? !content.equals(that.content) : that.content != null) return false;
+        if (bankInfoTypeId != null ? !bankInfoTypeId.equals(that.bankInfoTypeId) : that.bankInfoTypeId != null)
+            return false;
+        if (typeId != null ? !typeId.equals(that.typeId) : that.typeId != null) return false;
+        return newsRelation != null ? newsRelation.equals(that.newsRelation) : that.newsRelation == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = title != null ? title.hashCode() : 0;
+        result = 31 * result + (creationDate != null ? creationDate.hashCode() : 0);
+        result = 31 * result + (lastModificationDate != null ? lastModificationDate.hashCode() : 0);
+        result = 31 * result + (content != null ? content.hashCode() : 0);
+        result = 31 * result + (bankInfoTypeId != null ? bankInfoTypeId.hashCode() : 0);
+        result = 31 * result + (typeId != null ? typeId.hashCode() : 0);
+        result = 31 * result + (newsRelation != null ? newsRelation.hashCode() : 0);
+        return result;
     }
 }

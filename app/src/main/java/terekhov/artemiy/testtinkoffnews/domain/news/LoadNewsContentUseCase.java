@@ -2,12 +2,12 @@ package terekhov.artemiy.testtinkoffnews.domain.news;
 
 import io.reactivex.Observable;
 import terekhov.artemiy.testtinkoffnews.App;
-import terekhov.artemiy.testtinkoffnews.data.entities.mapper.NewsContentEntityDataMapper;
+import terekhov.artemiy.testtinkoffnews.data.db.exception.MissingDataException;
+import terekhov.artemiy.testtinkoffnews.data.entities.NewsContentEntity;
 import terekhov.artemiy.testtinkoffnews.data.repository.DataStore;
 import terekhov.artemiy.testtinkoffnews.data.repository.news.NewsRepository;
 import terekhov.artemiy.testtinkoffnews.domain.interactor.SchedulerProvider;
 import terekhov.artemiy.testtinkoffnews.domain.interactor.UseCase;
-import terekhov.artemiy.testtinkoffnews.domain.model.NewsContent;
 
 import static terekhov.artemiy.testtinkoffnews.data.repository.DataStore.TYPE_REQUEST_LOCAL;
 import static terekhov.artemiy.testtinkoffnews.data.repository.DataStore.TYPE_REQUEST_REMOTE;
@@ -17,18 +17,38 @@ import static terekhov.artemiy.testtinkoffnews.data.repository.DataStore.TYPE_RE
  * Copyright (c) 2018 Artemiy Terekhov. All rights reserved.
  */
 
-public class GetNewsContentUseCase extends UseCase<NewsContent, GetNewsContentUseCase.Request> {
+public class LoadNewsContentUseCase extends UseCase<NewsContentEntity, LoadNewsContentUseCase.Request> {
     private final NewsRepository mAppRepository;
 
-    public GetNewsContentUseCase(SchedulerProvider schedulerProvider) {
+    public LoadNewsContentUseCase(SchedulerProvider schedulerProvider) {
         super(schedulerProvider.io(), schedulerProvider.ui());
-        mAppRepository = App.getAppComponent().newsRepository();
+        mAppRepository = ((App) App.getAppComponent().app()).newsRepository();
     }
 
     @Override
-    public Observable<NewsContent> buildUseCaseObservable(Request request) {
-        return mAppRepository.getNewsContent(request.getId()).toObservable()
-                .map(NewsContentEntityDataMapper::transform);
+    public Observable<NewsContentEntity> buildUseCaseObservable(Request request) {
+        return mAppRepository.getNewsContent(request.getId()).toObservable();
+                //.map(NewsContentEntityDataMapper::transform);
+    }
+
+    public void registerObserver(Request request) {
+        mAppRepository.registerNewsContentObserver(request.getId(), data -> {
+            if (!data.isEmpty()) {
+                doOnNext(data.get(0));
+            } else {
+                doOnError(new MissingDataException());
+            }
+        });
+    }
+
+    public void unregisterObserver() {
+        if (mAppRepository != null) {
+            mAppRepository.unregisterNewsContentObserver();
+        }
+    }
+
+    public void testChangeItem() {
+        mAppRepository.testChangeItem();
     }
 
     public static final class Request {

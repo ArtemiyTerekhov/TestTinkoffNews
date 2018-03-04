@@ -120,6 +120,11 @@ public class NewsContentFragment extends BaseFragment<NewsContentContact.View, N
         mDateTextView.setText(DateFormat.format("dd.MM.yyyy HH:mm:ss", content.getDate()));
         mContentTextView.setText(Html.fromHtml(content.getContent()));
         mContentTextView.setMovementMethod(LinkMovementMethod.getInstance());
+
+        mTitleTextView.setOnClickListener((view) -> {
+            mPresenter.testChangeItem();
+            showError("Text was changed");
+        });
     }
 
     @Override

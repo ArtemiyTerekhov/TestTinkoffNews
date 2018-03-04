@@ -31,6 +31,6 @@ public class NewsViewHolder extends RecyclerView.ViewHolder {
     public void bind(News news, final View.OnClickListener onItemClickListener) {
         itemView.setOnClickListener(onItemClickListener);
         mTitleTextView.setText(Html.fromHtml(news.getText()));
-        mDateTextView.setText(DateFormat.format("dd.MM.yyyy HH:mm:ss", news.getDate()));
+        mDateTextView.setText(DateFormat.format("dd MMM yyyy HH:mm:ss", news.getDate()));
     }
 }

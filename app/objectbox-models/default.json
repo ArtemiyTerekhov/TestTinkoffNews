@@ -1,0 +1,109 @@
+{
+  "_note1": "KEEP THIS FILE! Check it into a version control system (VCS) like git.",
+  "_note2": "ObjectBox manages crucial IDs for your object model. See docs for details.",
+  "_note3": "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
+  "entities": [
+    {
+      "id": "1:482929557106206644",
+      "lastPropertyId": "1:7613430315656389110",
+      "name": "BaseEntity",
+      "properties": [
+        {
+          "id": "1:7613430315656389110",
+          "name": "primaryId"
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "2:5330151305955338526",
+      "lastPropertyId": "8:5239840500620456452",
+      "name": "NewsContentEntity",
+      "properties": [
+        {
+          "id": "1:504280547147804927",
+          "name": "primaryId"
+        },
+        {
+          "id": "2:1535189076569558478",
+          "name": "title"
+        },
+        {
+          "id": "3:3500312826810022120",
+          "name": "creationDate"
+        },
+        {
+          "id": "4:121559806796390528",
+          "name": "lastModificationDate"
+        },
+        {
+          "id": "5:1089511747149973205",
+          "name": "content"
+        },
+        {
+          "id": "6:8776987438776845564",
+          "name": "bankInfoTypeId"
+        },
+        {
+          "id": "7:8024517267770856912",
+          "name": "typeId"
+        },
+        {
+          "id": "8:5239840500620456452",
+          "indexId": "1:3740675420706372905",
+          "name": "newsRelationId"
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "3:8819927644416138622",
+      "lastPropertyId": "7:3006878136361560705",
+      "name": "NewsEntity",
+      "properties": [
+        {
+          "id": "1:7385294075110852374",
+          "name": "primaryId"
+        },
+        {
+          "id": "2:7541455920970496218",
+          "indexId": "2:7392248903210437991",
+          "name": "id"
+        },
+        {
+          "id": "3:5192000277136045399",
+          "name": "name"
+        },
+        {
+          "id": "4:7473764721516726700",
+          "name": "text"
+        },
+        {
+          "id": "5:7710501645541646197",
+          "name": "publicationDate"
+        },
+        {
+          "id": "6:6830208301383529625",
+          "name": "bankInfoTypeId"
+        },
+        {
+          "id": "7:3006878136361560705",
+          "indexId": "3:5746744951402728201",
+          "name": "newsContentRelationId"
+        }
+      ],
+      "relations": []
+    }
+  ],
+  "lastEntityId": "3:8819927644416138622",
+  "lastIndexId": "3:5746744951402728201",
+  "lastRelationId": "0:0",
+  "lastSequenceId": "0:0",
+  "modelVersion": 4,
+  "modelVersionParserMinimum": 4,
+  "retiredEntityUids": [],
+  "retiredIndexUids": [],
+  "retiredPropertyUids": [],
+  "retiredRelationUids": [],
+  "version": 1
+}

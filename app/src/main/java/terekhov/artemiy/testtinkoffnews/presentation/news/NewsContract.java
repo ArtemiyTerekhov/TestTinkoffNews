@@ -17,23 +17,14 @@ public interface NewsContract {
     interface View extends BaseView {
         void loadingStarted();
         void loadingFinished();
-
         void updateList(List<News> items, boolean isRefresh);
-
         int getItemsCount();
-
         void showError(String message);
-        //void executeObservable();
     }
 
     interface Presenter extends BasePresenter<View> {
         void swipeToRefresh();
         void fetchNews(boolean isRefresh);
-
         SchedulerProvider getSchedulerProvider();
-
-        //Observable<List<News>> getObservable();
-
-        void testChangeItem();
     }
 }

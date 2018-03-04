@@ -14,6 +14,6 @@ import terekhov.artemiy.testtinkoffnews.data.entities.NewsEntity;
  */
 
 public interface AbsNewsRemoteDataStore {
-    Flowable<List<NewsEntity>> getNews();
+    Single<List<NewsEntity>> getNews();
     Single<NewsContentEntity> getNewsContent(@NonNull final String id);
 }

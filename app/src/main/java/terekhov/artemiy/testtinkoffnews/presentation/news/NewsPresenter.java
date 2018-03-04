@@ -2,16 +2,17 @@ package terekhov.artemiy.testtinkoffnews.presentation.news;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.util.Pair;
 
 import java.util.Collections;
 import java.util.List;
 
-import io.reactivex.Observable;
 import terekhov.artemiy.testtinkoffnews.App;
+import terekhov.artemiy.testtinkoffnews.data.db.exception.MissingDataException;
+import terekhov.artemiy.testtinkoffnews.data.entities.NewsEntity;
+import terekhov.artemiy.testtinkoffnews.data.entities.mapper.NewsEntityDataMapper;
 import terekhov.artemiy.testtinkoffnews.domain.interactor.SchedulerProvider;
 import terekhov.artemiy.testtinkoffnews.domain.model.News;
-import terekhov.artemiy.testtinkoffnews.domain.news.GetNewsUseCase;
+import terekhov.artemiy.testtinkoffnews.domain.news.LoadNewsUseCase;
 import terekhov.artemiy.testtinkoffnews.domain.news.SyncNewsUseCase;
 
 /**
@@ -23,42 +24,59 @@ public class NewsPresenter implements NewsContract.Presenter {
     private static final String TAG = NewsPresenter.class.getSimpleName();
 
     private NewsContract.View mView;
-    private GetNewsUseCase mGetNewsUseCase;
+    private LoadNewsUseCase mLoadNewsUseCase;
     private SyncNewsUseCase mSyncNewsUseCase;
     private SchedulerProvider mSchedulerProvider;
 
     public NewsPresenter() {
         mSchedulerProvider = App.getAppComponent().schedulerProvider();
-        mGetNewsUseCase = new GetNewsUseCase(mSchedulerProvider);
+
         mSyncNewsUseCase = new SyncNewsUseCase(mSchedulerProvider);
+        mLoadNewsUseCase = new LoadNewsUseCase(mSchedulerProvider);
     }
 
     @Override
     public void subscribe(NewsContract.View view) {
         mView = view;
 
-        mGetNewsUseCase.getObservable(this::onError)
-                .subscribe(this::onLocalNews);
+        mLoadNewsUseCase.getObservable(this::onLoadError, null)
+                .subscribe(this::onLoadNews);
 
-        mSyncNewsUseCase.getObservable(this::onError)
-                .subscribe(result -> {});
+        mSyncNewsUseCase.getObservable(this::onSyncError)
+                .subscribe(this::onSyncNews);
 
-        if (mView.getItemsCount() == 0) {
-            fetchNews(false);
+        fetchNews(false);
+    }
+
+    private void onLoadNews(@NonNull List<NewsEntity> list) {
+        if (list.isEmpty()) {
+            showLoadingProgress();
+            swipeToRefresh();
+        } else {
+            onUpdate(NewsEntityDataMapper.transform(NewsEntity.sort(list)), false);
         }
     }
 
-    private void onLocalNews(@NonNull Pair<List<News>, Boolean> pair) {
-        if (pair.first != null && pair.first.isEmpty()) {
-            mSyncNewsUseCase.execute(null);
-        } else {
-            onUpdate(pair.first, pair.second);
-        }
+    private void onSyncNews(@NonNull Boolean result) {
+        hideLoadingProgress();
     }
 
     @Override
     public void unsubscribe() {
         mView = null;
+        cancelSyncCountries();
+    }
+
+    public void cancelSyncCountries() {
+        if (isViewBound()) {
+            mView.loadingFinished();
+        }
+        if (mLoadNewsUseCase != null) {
+            mLoadNewsUseCase.unregisterObserver();
+        }
+        if (mSyncNewsUseCase != null) {
+            mSyncNewsUseCase.clear();
+        }
     }
 
     @Override
@@ -97,23 +115,14 @@ public class NewsPresenter implements NewsContract.Presenter {
 
     @Override
     public void fetchNews(boolean isRefresh) {
-        showLoadingProgress();
-
-        if (mGetNewsUseCase != null) {
-            mGetNewsUseCase.execute(
-                    new GetNewsUseCase.Request.Builder()
-                            .clean(isRefresh).build());
+        if (mLoadNewsUseCase != null) {
+            mLoadNewsUseCase.registerObserver();
         }
     }
 
     @Override
     public SchedulerProvider getSchedulerProvider() {
         return mSchedulerProvider;
-    }
-
-    @Override
-    public void testChangeItem() {
-        mGetNewsUseCase.testChangeItem();
     }
 
     private void showLoadingProgress() {
@@ -128,8 +137,13 @@ public class NewsPresenter implements NewsContract.Presenter {
         }
     }
 
-    private void onError(Throwable throwable) {
+    private void onLoadError(Throwable throwable) {
         if (isViewBound()) {
+            if (throwable instanceof MissingDataException) {
+                showLoadingProgress();
+                swipeToRefresh();
+                return;
+            }
             // Don't check exception type in test app
             mView.showError(throwable.getMessage());
 //            if (throwable instanceof NoConnectivityException
@@ -140,6 +154,13 @@ public class NewsPresenter implements NewsContract.Presenter {
 //            } else {
 //                todo
 //            }
+        }
+        hideLoadingProgress();
+    }
+
+    private void onSyncError(Throwable throwable) {
+        if (isViewBound()) {
+            mView.showError(throwable.getMessage());
         }
         hideLoadingProgress();
     }

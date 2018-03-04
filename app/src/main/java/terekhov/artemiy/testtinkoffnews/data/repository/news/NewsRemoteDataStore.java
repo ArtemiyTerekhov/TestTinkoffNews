@@ -26,8 +26,8 @@ public class NewsRemoteDataStore implements AbsNewsRemoteDataStore {
     }
 
     @Override
-    public Flowable<List<NewsEntity>> getNews() {
-        return mAPIService.getNews();
+    public Single<List<NewsEntity>> getNews() {
+        return mAPIService.getNews().singleOrError();
     }
 
     @Override

@@ -3,6 +3,7 @@ package terekhov.artemiy.testtinkoffnews.data.entities;
 import android.support.annotation.CallSuper;
 
 import com.google.gson.Gson;
+import com.google.gson.annotations.SerializedName;
 
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
@@ -14,7 +15,10 @@ import io.objectbox.annotation.Id;
 
 @Entity
 public class BaseEntity {
+    public static final String SN_PRIMARY_ID = "primaryId";
+
     @Id (assignable = true)
+    @SerializedName(SN_PRIMARY_ID)
     protected long primaryId;
 
     public static <T> String toJson(T object, Class<T> clazz) {
@@ -23,21 +27,6 @@ public class BaseEntity {
 
     public static <T> T fromJson(String json, Class<T> clazz) {
         return new Gson().fromJson(json, clazz);
-    }
-
-    @CallSuper
-    public <T> void mergeWith(T obj) {
-        if (this == obj) {
-            return;
-        }
-        BaseEntity entity = (BaseEntity) obj;
-
-        // save base data
-    }
-
-    public static <T extends BaseEntity> T merge(T saved, T input) {
-        saved.mergeWith(input);
-        return saved;
     }
 
     public long getPrimaryId() {

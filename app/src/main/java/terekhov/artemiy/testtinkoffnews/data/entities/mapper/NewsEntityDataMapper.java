@@ -2,6 +2,7 @@ package terekhov.artemiy.testtinkoffnews.data.entities.mapper;
 
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 
 import terekhov.artemiy.testtinkoffnews.data.entities.NewsEntity;
 import terekhov.artemiy.testtinkoffnews.domain.model.News;
@@ -28,8 +29,7 @@ public class NewsEntityDataMapper {
             model.setId(entity.getId());
             model.setText(entity.getText());
             model.setDate(entity.getPublicationDate() != null
-                    ? entity.getPublicationDate().getDate() != null
-                    ? entity.getPublicationDate().getDate() : 0 : 0);
+                    ? entity.getPublicationDate().getDate() : 0);
         }
         return model;
     }
@@ -40,7 +40,7 @@ public class NewsEntityDataMapper {
      * @param entityCollection Object Collection to be transformed.
      * @return {@link News} if valid {@link NewsEntity} otherwise null.
      */
-    public static LinkedList<News> transform(Collection<NewsEntity> entityCollection) {
+    public static List<News> transform(Collection<NewsEntity> entityCollection) {
         final LinkedList<News> list = new LinkedList<>();
         for (NewsEntity entity : entityCollection) {
             list.add(transform(entity));

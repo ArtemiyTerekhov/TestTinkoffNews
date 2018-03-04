@@ -16,6 +16,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import terekhov.artemiy.testtinkoffnews.App;
 import terekhov.artemiy.testtinkoffnews.R;
 import terekhov.artemiy.testtinkoffnews.domain.model.News;
 import terekhov.artemiy.testtinkoffnews.presentation.MainActivity;
@@ -141,9 +142,8 @@ public class NewsFragment extends BaseFragment<NewsContract.View, NewsContract.P
 
     @Override
     public void onItemClick(News item) {
-        mPresenter.testChangeItem();
-//        ((App) App.getAppComponent().app()).getNavigationManager()
-//                .navigateToNewsContentScreen(item.getId());
+        ((App) App.getAppComponent().app()).getNavigationManager()
+                .navigateToNewsContentScreen(item.getId());
     }
 
     @Override

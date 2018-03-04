@@ -50,10 +50,4 @@ public class AppModule {
         RxSnappy.init(context);
         return new RxSnappyClient();
     }
-
-    @Provides
-    @Singleton
-    BoxStore provideBoxStore(Application context) {
-        return MyObjectBox.builder().androidContext(context).build();
-    }
 }

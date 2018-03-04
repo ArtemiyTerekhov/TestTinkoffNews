@@ -14,14 +14,13 @@ public interface NewsContentContact {
     interface View extends BaseView {
         void loadingStarted();
         void loadingFinished();
-
         void update(NewsContent content);
-
         void showError(String message);
     }
 
     interface Presenter extends BasePresenter<View> {
         void setId(@NonNull String id);
         void fetchNewsContent();
+        void testChangeItem();
     }
 }

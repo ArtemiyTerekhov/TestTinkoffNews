@@ -26,5 +26,4 @@ public interface AppComponent {
     NewsAPIService newsAPIService();
     SchedulerProvider schedulerProvider();
     RxSnappyClient rxSnappyClient();
-    BoxStore boxStore();
 }
